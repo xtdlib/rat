@@ -19,14 +19,12 @@ func TestBasics(t *testing.T) {
 	if Minus(a, b).Add(b).String() != "2" {
 		t.Fatal()
 	}
-
 }
 
 func TestNeg(t *testing.T) {
 	a := Parse("2")
 	b := Parse("4")
 	a.Minus(b)
-
 }
 
 func TestQuo(t *testing.T) {
@@ -67,7 +65,7 @@ func TestString(t *testing.T) {
 
 	{
 		a := Parse("1/3")
-		a.precision = 8
+		a.Precision = 8
 		if a.String() != "0.33333333" {
 			t.Fatal(a.String())
 		}

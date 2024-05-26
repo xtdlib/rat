@@ -11,7 +11,7 @@ var DefaultPrecision = 4
 
 type rat struct {
 	bigrat    *big.Rat
-	precision int
+	Precision int
 }
 
 func (r *rat) Add(b *rat) *rat {
@@ -19,7 +19,7 @@ func (r *rat) Add(b *rat) *rat {
 	tmpbigrat.Add(r.bigrat, b.bigrat)
 	return &rat{
 		bigrat:    tmpbigrat,
-		precision: r.precision,
+		Precision: r.Precision,
 	}
 }
 
@@ -32,7 +32,7 @@ func (r *rat) Neg() *rat {
 	tmpbigrat.Neg(r.bigrat)
 	return &rat{
 		bigrat:    tmpbigrat,
-		precision: r.precision,
+		Precision: r.Precision,
 	}
 }
 
@@ -41,7 +41,7 @@ func (r *rat) Mul(b *rat) *rat {
 	tmpbigrat.Mul(r.bigrat, b.bigrat)
 	return &rat{
 		bigrat:    tmpbigrat,
-		precision: r.precision,
+		Precision: r.Precision,
 	}
 }
 
@@ -54,7 +54,7 @@ func (r *rat) Quo(b *rat) *rat {
 	tmpbigrat.Quo(r.bigrat, b.bigrat)
 	return &rat{
 		bigrat:    tmpbigrat,
-		precision: r.precision,
+		Precision: r.Precision,
 	}
 }
 
@@ -68,7 +68,7 @@ func (r *rat) Minus(b *rat) *rat {
 	tmpbigrat.Add(tmpbigrat, r.bigrat)
 	return &rat{
 		bigrat:    tmpbigrat,
-		precision: r.precision,
+		Precision: r.Precision,
 	}
 }
 
@@ -90,9 +90,9 @@ func (r *rat) PowInt(n int) *rat {
 func (r *rat) String() string {
 	n, exact := r.bigrat.FloatPrec()
 	if exact {
-		return r.bigrat.FloatString(min(r.precision, n))
+		return r.bigrat.FloatString(min(r.Precision, n))
 	}
-	return r.bigrat.FloatString(r.precision)
+	return r.bigrat.FloatString(r.Precision)
 }
 
 func (r *rat) Clone() *rat {
@@ -100,7 +100,7 @@ func (r *rat) Clone() *rat {
 	tmpr.Set(r.bigrat)
 	return &rat{
 		bigrat:    tmpr,
-		precision: r.precision,
+		Precision: r.Precision,
 	}
 }
 
@@ -130,7 +130,7 @@ func Quo(a *rat, b *rat) *rat {
 	c.Quo(a.bigrat, b.bigrat)
 	return &rat{
 		bigrat:    c,
-		precision: a.precision,
+		Precision: a.Precision,
 	}
 }
 
@@ -139,7 +139,7 @@ func Mul(a *rat, b *rat) *rat {
 	c.Mul(a.bigrat, b.bigrat)
 	return &rat{
 		bigrat:    c,
-		precision: a.precision,
+		Precision: a.Precision,
 	}
 }
 
@@ -148,7 +148,7 @@ func Add(a *rat, b *rat) *rat {
 	c.Add(a.bigrat, b.bigrat)
 	return &rat{
 		bigrat:    c,
-		precision: a.precision,
+		Precision: a.Precision,
 	}
 }
 
@@ -157,7 +157,7 @@ func Neg(a *rat) *rat {
 	c.Neg(a.bigrat)
 	return &rat{
 		bigrat:    c,
-		precision: a.precision,
+		Precision: a.Precision,
 	}
 }
 
@@ -166,7 +166,7 @@ func Minus(a *rat, b *rat) *rat {
 	c.Add(a.bigrat, Neg(b).bigrat)
 	return &rat{
 		bigrat:    c,
-		precision: a.precision,
+		Precision: a.Precision,
 	}
 }
 
@@ -174,7 +174,7 @@ func Zero() *rat {
 	tmpr := big.NewRat(0, 1)
 	return &rat{
 		bigrat:    tmpr,
-		precision: DefaultPrecision,
+		Precision: DefaultPrecision,
 	}
 }
 
@@ -184,28 +184,28 @@ func Clone(r *rat) *rat {
 	tmpr.Set(r.bigrat)
 	return &rat{
 		bigrat:    tmpr,
-		precision: DefaultPrecision,
+		Precision: DefaultPrecision,
 	}
 }
 
 func BigRat(a, b int64) *rat {
 	return &rat{
 		bigrat:    big.NewRat(a, b),
-		precision: DefaultPrecision,
+		Precision: DefaultPrecision,
 	}
 }
 
 func Int(a int) *rat {
 	return &rat{
 		bigrat:    big.NewRat(int64(a), 1),
-		precision: DefaultPrecision,
+		Precision: DefaultPrecision,
 	}
 }
 
 func Int64(a int64) *rat {
 	return &rat{
 		bigrat:    big.NewRat(a, 1),
-		precision: DefaultPrecision,
+		Precision: DefaultPrecision,
 	}
 }
 
@@ -238,7 +238,7 @@ func Parse(v string) *rat {
 		}
 		return &rat{
 			bigrat:    tmpr,
-			precision: DefaultPrecision,
+			Precision: DefaultPrecision,
 		}
 	}
 
@@ -249,7 +249,7 @@ func Parse(v string) *rat {
 	}
 	return &rat{
 		bigrat:    tmpr,
-		precision: DefaultPrecision,
+		Precision: DefaultPrecision,
 	}
 }
 
