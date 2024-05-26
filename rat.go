@@ -210,6 +210,18 @@ func Int64(a int64) *rat {
 }
 
 func Parse(v string) *rat {
+	// NOTE: not work for "0.5/1"
+	// nr := new(big.Rat)
+	// _, ok := nr.SetString(v)
+	// if !ok {
+	// 	panic("rat: invalid rat string " + v)
+	// }
+	//
+	// return &rat{
+	// 	bigrat:    nr,
+	// 	precision: DefaultPrecision,
+	// }
+
 	if strings.Contains(v, "/") {
 		arr := strings.Split(v, "/")
 		if len(arr) != 2 {
@@ -219,21 +231,24 @@ func Parse(v string) *rat {
 	}
 
 	if strings.Contains(v, ".") {
-		arr := strings.Split(v, ".")
-		if len(arr) != 2 {
-			panic("rat: invalid rat string " + v)
-		}
-
 		tmpr := new(big.Rat)
-		tmpr.Set(big.NewRat(mustParseInt(arr[0]+arr[1]), pow10(len(arr[1]))))
+		_, ok := tmpr.SetString(v)
+		if !ok {
+			panic("rat: invalid rat string: " + v)
+		}
 		return &rat{
 			bigrat:    tmpr,
 			precision: DefaultPrecision,
 		}
 	}
 
+	tmpr := new(big.Rat)
+	_, ok := tmpr.SetString(v)
+	if !ok {
+		panic("rat: invalid rat string: " + v)
+	}
 	return &rat{
-		bigrat:    big.NewRat(mustParseInt(v), 1),
+		bigrat:    tmpr,
 		precision: DefaultPrecision,
 	}
 }
