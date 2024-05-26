@@ -67,7 +67,8 @@ func TestString(t *testing.T) {
 
 	{
 		a := Parse("1/3")
-		if a.String() != "0.3333" {
+		a.precision = 8
+		if a.String() != "0.33333333" {
 			t.Fatal(a.String())
 		}
 	}
