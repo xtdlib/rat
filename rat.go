@@ -46,7 +46,7 @@ func (r *rat) Mul(b *rat) *rat {
 }
 
 func (r *rat) MulInt(v int) *rat {
-	return r.Mul(Int(v).Neg())
+	return r.Mul(Int(v))
 }
 
 func (r *rat) Quo(b *rat) *rat {
@@ -59,7 +59,7 @@ func (r *rat) Quo(b *rat) *rat {
 }
 
 func (r *rat) QuoInt(v int) *rat {
-	return r.Quo(Int(v).Neg())
+	return r.Quo(Int(v))
 }
 
 func (r *rat) Minus(b *rat) *rat {
@@ -77,7 +77,7 @@ func (r *rat) MinusInt(v int) *rat {
 }
 
 func (r *rat) PowInt(n int) *rat {
-	nr := Rat(r)
+	nr := Clone(r)
 	ret := Int(1)
 
 	for i := 0; i < n; i++ {
@@ -95,7 +95,7 @@ func (r *rat) String() string {
 	return r.bigrat.FloatString(r.precision)
 }
 
-func (r *rat) Copy() *rat {
+func (r *rat) Clone() *rat {
 	tmpr := new(big.Rat)
 	tmpr.Set(r.bigrat)
 	return &rat{
@@ -178,7 +178,7 @@ func Zero() *rat {
 	}
 }
 
-func Rat(r *rat) *rat {
+func Clone(r *rat) *rat {
 	// nil check?
 	tmpr := new(big.Rat)
 	tmpr.Set(r.bigrat)
@@ -209,13 +209,13 @@ func Int64(a int64) *rat {
 	}
 }
 
-func String(v string) *rat {
+func Parse(v string) *rat {
 	if strings.Contains(v, "/") {
 		arr := strings.Split(v, "/")
 		if len(arr) != 2 {
 			panic("rat: invalid rat string " + v)
 		}
-		return String(arr[0]).Quo(String(arr[1]))
+		return Parse(arr[0]).Quo(Parse(arr[1]))
 	}
 
 	if strings.Contains(v, ".") {

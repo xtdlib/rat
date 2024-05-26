@@ -1,12 +1,13 @@
 package rat
 
 import (
+	"fmt"
 	"testing"
 )
 
 func TestBasics(t *testing.T) {
-	a := String("2")
-	b := String("4")
+	a := Parse("2")
+	b := Parse("4")
 	if Add(a, b).String() != "6" {
 		t.Fatal()
 	}
@@ -22,28 +23,28 @@ func TestBasics(t *testing.T) {
 }
 
 func TestNeg(t *testing.T) {
-	a := String("2")
-	b := String("4")
+	a := Parse("2")
+	b := Parse("4")
 	a.Minus(b)
 
 }
 
 func TestQuo(t *testing.T) {
-	a := String("2")
-	b := String("4")
+	a := Parse("2")
+	b := Parse("4")
 	if Quo(a, b).String() != "0.5" {
 		t.Fatal("Quo")
 	}
 }
 
 func TestPowInt(t *testing.T) {
-	a := String("2")
+	a := Parse("2")
 	exp := a.PowInt(10).String()
 	if exp != "1024" {
 		t.Fatal(exp)
 	}
 
-	b := String("1/2")
+	b := Parse("1/2")
 	if a.Add(b).String() != "2.5" {
 		t.Fatal()
 	}
@@ -51,14 +52,14 @@ func TestPowInt(t *testing.T) {
 
 func TestString(t *testing.T) {
 	{
-		a := String("0.5/1")
+		a := Parse("0.5/1")
 		if a.String() != "0.5" {
 			t.Fatal(a.String())
 		}
 	}
 
 	{
-		a := String("1/0.5")
+		a := Parse("1/0.5")
 		if a.String() != "2" {
 			t.Fatal(a.String())
 		}
@@ -66,9 +67,9 @@ func TestString(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
-	a := String("1/2")
-	b := a.Copy()
-	if a.Add(String("1")).String() != "1.5" {
+	a := Parse("1/2")
+	b := a.Clone()
+	if a.Add(Parse("1")).String() != "1.5" {
 		t.Fatal()
 	}
 	if b.String() != "0.5" {
@@ -84,27 +85,34 @@ func TestZero(t *testing.T) {
 }
 
 func TestCmp(t *testing.T) {
-	a := String("1/2")
-	b := String("1/3")
+	a := Parse("1/2")
+	b := Parse("1/3")
 	if a.LessThan(b) {
 		t.Fatal()
 	}
 }
 
 func TestImu(t *testing.T) {
-	d := String("1")
-	// a := String("1/2")
-	
-	exp := String("4")
-    got := d.MinusInt(1).AddInt(2).MulInt(6).QuoInt(3)
+	d := Parse("1")
+
+	exp := Parse("4")
+	got := d.MinusInt(1).AddInt(2).MulInt(6).QuoInt(3) // 4
 
 	if d.String() != "1" {
 		t.Fatal(d.String())
 	}
 
 	if got.Equal(exp) != true {
-		t.Log(d.MinusInt(1))
 		t.Fatal("fatal")
 	}
+}
 
+func ExampleAdd() {
+	a := Parse("0.1")
+	fmt.Println(a.Add(Parse("0.2")))                      // 0.3
+	fmt.Println(a.Add(Parse("0.2")).Equal(BigRat(3, 10))) // true
+	fmt.Println(a)                                        // 0.1
+	// Output: 0.3
+	// true
+	// 0.1
 }
