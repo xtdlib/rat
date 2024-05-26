@@ -64,6 +64,13 @@ func TestString(t *testing.T) {
 			t.Fatal(a.String())
 		}
 	}
+
+	{
+		a := Parse("1/3")
+		if a.String() != "0.3333" {
+			t.Fatal(a.String())
+		}
+	}
 }
 
 func TestCopy(t *testing.T) {
