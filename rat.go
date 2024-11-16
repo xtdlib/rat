@@ -1,9 +1,8 @@
 package rat
 
 import (
-	"fmt"
+	"log/slog"
 	"math/big"
-	"strconv"
 	"strings"
 )
 
@@ -15,70 +14,51 @@ type rat struct {
 }
 
 func (r *rat) Add(b *rat) *rat {
-	tmpbigrat := new(big.Rat)
-	tmpbigrat.Add(r.bigrat, b.bigrat)
-	return &rat{
-		bigrat:    tmpbigrat,
-		Precision: r.Precision,
-	}
+	r.bigrat.Add(r.bigrat, b.bigrat)
+	return r
 }
 
 func (r *rat) AddInt(v int) *rat {
-	return r.Add(Int(v))
+	return r.Add(ParseInt(v))
 }
 
 func (r *rat) Neg() *rat {
-	tmpbigrat := new(big.Rat)
-	tmpbigrat.Neg(r.bigrat)
-	return &rat{
-		bigrat:    tmpbigrat,
-		Precision: r.Precision,
-	}
+	r.bigrat.Neg(r.bigrat)
+	return r
 }
 
 func (r *rat) Mul(b *rat) *rat {
-	tmpbigrat := new(big.Rat)
-	tmpbigrat.Mul(r.bigrat, b.bigrat)
-	return &rat{
-		bigrat:    tmpbigrat,
-		Precision: r.Precision,
-	}
+	r.bigrat.Mul(r.bigrat, b.bigrat)
+	return r
 }
 
 func (r *rat) MulInt(v int) *rat {
-	return r.Mul(Int(v))
+	return r.Mul(ParseInt(v))
 }
 
 func (r *rat) Quo(b *rat) *rat {
-	tmpbigrat := new(big.Rat)
-	tmpbigrat.Quo(r.bigrat, b.bigrat)
-	return &rat{
-		bigrat:    tmpbigrat,
-		Precision: r.Precision,
-	}
+	r.bigrat.Quo(r.bigrat, b.bigrat)
+	return r
 }
 
 func (r *rat) QuoInt(v int) *rat {
-	return r.Quo(Int(v))
+	return r.Quo(ParseInt(v))
 }
 
 func (r *rat) Minus(b *rat) *rat {
 	tmpbigrat := new(big.Rat)
 	tmpbigrat.Neg(b.bigrat)
-	tmpbigrat.Add(tmpbigrat, r.bigrat)
-	return &rat{
-		bigrat:    tmpbigrat,
-		Precision: r.Precision,
-	}
+	r.bigrat.Add(r.bigrat, tmpbigrat)
+	return r
 }
 
 func (r *rat) MinusInt(v int) *rat {
-	return r.Minus(Int(v))
+	return r.Minus(ParseInt(v))
 }
 
 func (r *rat) PowInt(n int) *rat {
 	nr := Clone(r)
-	ret := Int(1)
+	ret := ParseInt(1)
 
 	for i := 0; i < n; i++ {
 		ret = ret.Mul(nr)
@@ -188,28 +168,53 @@ func Clone(r *rat) *rat {
 	}
 }
 
-func BigRat(a, b int64) *rat {
+func New(a, b int64) *rat {
 	return &rat{
 		bigrat:    big.NewRat(a, b),
 		Precision: DefaultPrecision,
 	}
 }
 
-func Int(a int) *rat {
+func ParseFloat(a float64) *rat {
+	bigrat := new(big.Rat)
+	bigrat.SetFloat64(a)
+	return &rat{
+		bigrat:    bigrat,
+		Precision: DefaultPrecision,
+	}
+}
+
+func ParseInt(a int) *rat {
 	return &rat{
 		bigrat:    big.NewRat(int64(a), 1),
 		Precision: DefaultPrecision,
 	}
 }
 
-func Int64(a int64) *rat {
+func ParseInt64(a int64) *rat {
 	return &rat{
 		bigrat:    big.NewRat(a, 1),
 		Precision: DefaultPrecision,
 	}
 }
 
-func Parse(v string) *rat {
+func Parse(v string) (out *rat) {
+	defer func() {
+		if out == nil {
+			slog.Error("rat: invalid rat string " + v)
+		}
+	}()
+
+	if strings.HasSuffix(v, "%") {
+		defer func() {
+			if out == nil {
+				return 
+			}
+			out.QuoInt(100)
+		}()
+		v = v[0:len(v)-1] 
+	}
+
 	// NOTE: not work for "0.5/1"
 	// nr := new(big.Rat)
 	// _, ok := nr.SetString(v)
@@ -225,16 +230,24 @@ func Parse(v string) *rat {
 	if strings.Contains(v, "/") {
 		arr := strings.Split(v, "/")
 		if len(arr) != 2 {
-			panic("rat: invalid rat string " + v)
+			return nil
 		}
-		return Parse(arr[0]).Quo(Parse(arr[1]))
+		x := Parse(arr[0])
+		if x == nil {
+			return nil
+		}
+		y := Parse(arr[1])
+		if y == nil {
+			return nil
+		}
+		return x.Quo(y)
 	}
 
 	if strings.Contains(v, ".") {
 		tmpr := new(big.Rat)
 		_, ok := tmpr.SetString(v)
 		if !ok {
-			panic("rat: invalid rat string: " + v)
+			return nil
 		}
 		return &rat{
 			bigrat:    tmpr,
@@ -245,7 +258,7 @@ func Parse(v string) *rat {
 	tmpr := new(big.Rat)
 	_, ok := tmpr.SetString(v)
 	if !ok {
-		panic("rat: invalid rat string: " + v)
+		slog.Error("rat: invalid rat string " + v)
 	}
 	return &rat{
 		bigrat:    tmpr,
@@ -253,18 +266,18 @@ func Parse(v string) *rat {
 	}
 }
 
-func mustParseInt(v string) int64 {
-	iv, err := strconv.ParseInt(v, 10, 64)
-	if err != nil {
-		panic(fmt.Sprintf("rat: %v", err))
-	}
-	return iv
-}
-
-func pow10(n int) int64 {
-	var v int64 = 1
-	for i := 0; i < n; i++ {
-		v *= 10
-	}
-	return v
-}
+// func mustParseInt(v string) int64 {
+// 	iv, err := strconv.ParseInt(v, 10, 64)
+// 	if err != nil {
+// 		panic(fmt.Sprintf("rat: %v", err))
+// 	}
+// 	return iv
+// }
+//
+// func pow10(n int) int64 {
+// 	var v int64 = 1
+// 	for i := 0; i < n; i++ {
+// 		v *= 10
+// 	}
+// 	return v
+// }

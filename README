@@ -5,4 +5,3 @@ Alternative API for rational numbers in go. It's wrapper arround math.Rat.
 
     a := rat.Parse("0.1")
     fmt.Println(a.Add(rat.Parse("0.2")).Equal(rat.BigRat(3, 10))) // Output: true
-    fmt.Println(a) // Output: 0.1, a is not changed.
