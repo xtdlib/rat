@@ -6,7 +6,25 @@ import (
 	"strings"
 )
 
-var DefaultPrecision = 4
+var DefaultPrecision = 7
+
+func Rat[T ~int | ~int32 | ~int64 | ~float64 | ~float32 | ~string](v T) *rat {
+	switch v := any(v).(type) {
+	case float32:
+		return parseFloat64(float64(v))
+	case float64:
+		return parseFloat64(float64(v))
+	case int:
+		return parseInt64(int64(v))
+	case int32:
+		return parseInt64(int64(v))
+	case int64:
+		return parseInt64(int64(v))
+	case string:
+		return parse(v)
+	}
+	return nil
+}
 
 type rat struct {
 	bigrat    *big.Rat
@@ -19,7 +37,7 @@ func (r *rat) Add(b *rat) *rat {
 }
 
 func (r *rat) AddInt(v int) *rat {
-	return r.Add(ParseInt(v))
+	return r.Add(parseInt(v))
 }
 
 func (r *rat) Neg() *rat {
@@ -33,7 +51,7 @@ func (r *rat) Mul(b *rat) *rat {
 }
 
 func (r *rat) MulInt(v int) *rat {
-	return r.Mul(ParseInt(v))
+	return r.Mul(parseInt(v))
 }
 
 func (r *rat) Quo(b *rat) *rat {
@@ -42,29 +60,31 @@ func (r *rat) Quo(b *rat) *rat {
 }
 
 func (r *rat) QuoInt(v int) *rat {
-	return r.Quo(ParseInt(v))
+	return r.Quo(parseInt(v))
 }
 
 func (r *rat) Minus(b *rat) *rat {
-	tmpbigrat := new(big.Rat)
-	tmpbigrat.Neg(b.bigrat)
-	r.bigrat.Add(r.bigrat, tmpbigrat)
+	r.Add(Neg(b))
+	// tmpbigrat := new(big.Rat)
+	// tmpbigrat.Neg(b.bigrat)
+	// r.bigrat.Add(r.bigrat, tmpbigrat)
 	return r
 }
 
 func (r *rat) MinusInt(v int) *rat {
-	return r.Minus(ParseInt(v))
+	return r.Minus(parseInt(v))
 }
 
 func (r *rat) PowInt(n int) *rat {
-	nr := Clone(r)
-	ret := ParseInt(1)
-
-	for i := 0; i < n; i++ {
-		ret = ret.Mul(nr)
+	v := r.Clone()
+	if n == 0 {
+		r.Set(parseInt(1))
+		return r
 	}
-
-	return ret
+	if n > 0 {
+		return r.PowInt(n - 1).Mul(v)
+	}
+	return r
 }
 
 func (r *rat) String() string {
@@ -73,6 +93,11 @@ func (r *rat) String() string {
 		return r.bigrat.FloatString(min(r.Precision, n))
 	}
 	return r.bigrat.FloatString(r.Precision)
+}
+
+func (r *rat) Set(v *rat) *rat {
+	r.bigrat.Set(v.bigrat)
+	return r
 }
 
 func (r *rat) Clone() *rat {
@@ -84,21 +109,21 @@ func (r *rat) Clone() *rat {
 	}
 }
 
-func (r *rat) LessThan(b *rat) bool {
+func (r *rat) IsLessThan(b *rat) bool {
 	if r.bigrat.Cmp(b.bigrat) == -1 {
 		return true
 	}
 	return false
 }
 
-func (r *rat) GreaterThan(b *rat) bool {
+func (r *rat) IsGreaterThan(b *rat) bool {
 	if r.bigrat.Cmp(b.bigrat) == 1 {
 		return true
 	}
 	return false
 }
 
-func (r *rat) Equal(b *rat) bool {
+func (r *rat) IsEqual(b *rat) bool {
 	if r.bigrat.Cmp(b.bigrat) == 0 {
 		return true
 	}
@@ -175,7 +200,7 @@ func New(a, b int64) *rat {
 	}
 }
 
-func ParseFloat(a float64) *rat {
+func parseFloat64(a float64) *rat {
 	bigrat := new(big.Rat)
 	bigrat.SetFloat64(a)
 	return &rat{
@@ -184,21 +209,21 @@ func ParseFloat(a float64) *rat {
 	}
 }
 
-func ParseInt(a int) *rat {
+func parseInt(a int) *rat {
 	return &rat{
 		bigrat:    big.NewRat(int64(a), 1),
 		Precision: DefaultPrecision,
 	}
 }
 
-func ParseInt64(a int64) *rat {
+func parseInt64(a int64) *rat {
 	return &rat{
 		bigrat:    big.NewRat(a, 1),
 		Precision: DefaultPrecision,
 	}
 }
 
-func Parse(v string) (out *rat) {
+func parse(v string) (out *rat) {
 	defer func() {
 		if out == nil {
 			slog.Error("rat: invalid rat string " + v)
@@ -208,11 +233,11 @@ func Parse(v string) (out *rat) {
 	if strings.HasSuffix(v, "%") {
 		defer func() {
 			if out == nil {
-				return 
+				return
 			}
 			out.QuoInt(100)
 		}()
-		v = v[0:len(v)-1] 
+		v = v[0 : len(v)-1]
 	}
 
 	// NOTE: not work for "0.5/1"
@@ -232,11 +257,11 @@ func Parse(v string) (out *rat) {
 		if len(arr) != 2 {
 			return nil
 		}
-		x := Parse(arr[0])
+		x := parse(arr[0])
 		if x == nil {
 			return nil
 		}
-		y := Parse(arr[1])
+		y := parse(arr[1])
 		if y == nil {
 			return nil
 		}
@@ -265,19 +290,3 @@ func Parse(v string) (out *rat) {
 		Precision: DefaultPrecision,
 	}
 }
-
-// func mustParseInt(v string) int64 {
-// 	iv, err := strconv.ParseInt(v, 10, 64)
-// 	if err != nil {
-// 		panic(fmt.Sprintf("rat: %v", err))
-// 	}
-// 	return iv
-// }
-//
-// func pow10(n int) int64 {
-// 	var v int64 = 1
-// 	for i := 0; i < n; i++ {
-// 		v *= 10
-// 	}
-// 	return v
-// }

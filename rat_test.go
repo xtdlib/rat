@@ -5,13 +5,13 @@ import (
 )
 
 func TestParcentage(t *testing.T) {
-	a := Parse("3%")
+	a := parse("3%")
 	t.Log(a.String())
 }
 
 func TestBasics(t *testing.T) {
-	a := Parse("2")
-	b := Parse("4")
+	a := parse("2")
+	b := parse("4")
 	if Add(a, b).String() != "6" {
 		t.Fatal()
 	}
@@ -26,49 +26,55 @@ func TestBasics(t *testing.T) {
 }
 
 func TestNeg(t *testing.T) {
-	a := Parse("2")
-	b := Parse("4")
-	a.Minus(b)
+	a := parse("2")
+	b := parse("4")
+	a.Minus(b).IsEqual(Rat("-2"))
 }
 
 func TestQuo(t *testing.T) {
-	a := Parse("2")
-	b := Parse("4")
+	a := parse("2")
+	b := parse("4")
 	if Quo(a, b).String() != "0.5" {
 		t.Fatal("Quo")
 	}
 }
 
 func TestPowInt(t *testing.T) {
-	a := Parse("2")
-	exp := a.PowInt(10).String()
-	if exp != "1024" {
-		t.Fatal(exp)
+	a := parse("2")              // a = 2
+	if a.String() != "2" {
+		t.Fatalf("expected 2, got %s", a.String())
 	}
 
-	b := Parse("1/2")
-	if a.Add(b).String() != "2.5" {
-		t.Fatal()
+	if ! a.PowInt(0).IsEqual(Rat("1")) {
+		t.Fatalf("expected 0, got %s", a.String())
 	}
+
+	a.Mul(Rat("2"))
+
+	exp := a.PowInt(2).String() // a^10 = 1024
+	if exp != "4" {
+		t.Fatalf("expected 1024, got %s", exp)
+	}
+
 }
 
 func TestString(t *testing.T) {
 	{
-		a := Parse("0.5/1")
+		a := parse("0.5/1")
 		if a.String() != "0.5" {
 			t.Fatal(a.String())
 		}
 	}
 
 	{
-		a := Parse("1/0.5")
+		a := parse("1/0.5")
 		if a.String() != "2" {
 			t.Fatal(a.String())
 		}
 	}
 
 	{
-		a := Parse("1/3")
+		a := parse("1/3")
 		a.Precision = 8
 		if a.String() != "0.33333333" {
 			t.Fatal(a.String())
@@ -77,9 +83,9 @@ func TestString(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
-	a := Parse("1/2")
+	a := parse("1/2")
 	b := a.Clone()
-	if a.Add(Parse("1")).String() != "1.5" {
+	if a.Add(parse("1")).String() != "1.5" {
 		t.Fatal()
 	}
 	if b.String() != "0.5" {
@@ -95,24 +101,24 @@ func TestZero(t *testing.T) {
 }
 
 func TestCmp(t *testing.T) {
-	a := Parse("1/2")
-	b := Parse("1/3")
-	if a.LessThan(b) {
+	a := parse("1/2")
+	b := parse("1/3")
+	if a.IsLessThan(b) {
 		t.Fatal()
 	}
 }
 
 func TestImu(t *testing.T) {
-	d := Parse("1")
+	d := parse("1")
 
-	exp := Parse("4")
+	exp := parse("4")
 	got := d.MinusInt(1).AddInt(2).MulInt(6).QuoInt(3) // 4
 
 	if d.String() != "4" {
 		t.Fatal(d.String())
 	}
 
-	if got.Equal(exp) != true {
+	if got.IsEqual(exp) != true {
 		t.Fatal("fatal")
 	}
 }
