@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/investing-kr/rat"
+	"github.com/aca/qwer/rat"
 )
 
 func main() {
@@ -15,5 +15,7 @@ func main() {
 	// log.Println(rat.Rat("5").Ceil())
 	// log.Println(rat.Rat("5.1").Ceil())
 	// log.Println(rat.Rat("-5.1").Ceil())
-	log.Println(rat.Rat("3%").Mul(10))
+	// log.Println(rat.Rat("3%").Mul(10))
+
+	log.Println(rat.Rat("1").Quo(10))
 }
