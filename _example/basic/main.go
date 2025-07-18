@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/aca/qwer/rat"
+	"github.com/xtdlib/rat"
 )
 
 func main() {
