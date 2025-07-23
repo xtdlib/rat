@@ -59,6 +59,16 @@ func Rat(v any) *Rational {
 		return parseInt64(int64(v))
 	case int64:
 		return parseInt64(int64(v))
+	case uint:
+		return parseUint64(uint64(v))
+	case uint8:
+		return parseUint64(uint64(v))
+	case uint16:
+		return parseUint64(uint64(v))
+	case uint32:
+		return parseUint64(uint64(v))
+	case uint64:
+		return parseUint64(v)
 	case string:
 		return parse(v)
 	case *Rational:
@@ -191,6 +201,31 @@ func (r *Rational) Sub(ins ...any) *Rational {
 			var temp big.Rat
 			temp.SetInt64(v)
 			out.bigrat.Sub(&out.bigrat, &temp)
+		case uint:
+			var temp big.Rat
+			bigInt := new(big.Int).SetUint64(uint64(v))
+			temp.SetInt(bigInt)
+			out.bigrat.Sub(&out.bigrat, &temp)
+		case uint8:
+			var temp big.Rat
+			bigInt := new(big.Int).SetUint64(uint64(v))
+			temp.SetInt(bigInt)
+			out.bigrat.Sub(&out.bigrat, &temp)
+		case uint16:
+			var temp big.Rat
+			bigInt := new(big.Int).SetUint64(uint64(v))
+			temp.SetInt(bigInt)
+			out.bigrat.Sub(&out.bigrat, &temp)
+		case uint32:
+			var temp big.Rat
+			bigInt := new(big.Int).SetUint64(uint64(v))
+			temp.SetInt(bigInt)
+			out.bigrat.Sub(&out.bigrat, &temp)
+		case uint64:
+			var temp big.Rat
+			bigInt := new(big.Int).SetUint64(v)
+			temp.SetInt(bigInt)
+			out.bigrat.Sub(&out.bigrat, &temp)
 		case float32:
 			var temp big.Rat
 			temp.SetFloat64(float64(v))
@@ -236,6 +271,31 @@ func (r *Rational) Add(ins ...any) *Rational {
 		case int64:
 			var temp big.Rat
 			temp.SetInt64(v)
+			out.bigrat.Add(&out.bigrat, &temp)
+		case uint:
+			var temp big.Rat
+			bigInt := new(big.Int).SetUint64(uint64(v))
+			temp.SetInt(bigInt)
+			out.bigrat.Add(&out.bigrat, &temp)
+		case uint8:
+			var temp big.Rat
+			bigInt := new(big.Int).SetUint64(uint64(v))
+			temp.SetInt(bigInt)
+			out.bigrat.Add(&out.bigrat, &temp)
+		case uint16:
+			var temp big.Rat
+			bigInt := new(big.Int).SetUint64(uint64(v))
+			temp.SetInt(bigInt)
+			out.bigrat.Add(&out.bigrat, &temp)
+		case uint32:
+			var temp big.Rat
+			bigInt := new(big.Int).SetUint64(uint64(v))
+			temp.SetInt(bigInt)
+			out.bigrat.Add(&out.bigrat, &temp)
+		case uint64:
+			var temp big.Rat
+			bigInt := new(big.Int).SetUint64(v)
+			temp.SetInt(bigInt)
 			out.bigrat.Add(&out.bigrat, &temp)
 		case float32:
 			var temp big.Rat
@@ -288,6 +348,31 @@ func (r *Rational) Mul(in any) *Rational {
 		var temp big.Rat
 		temp.SetInt64(v)
 		out.bigrat.Mul(&out.bigrat, &temp)
+	case uint:
+		var temp big.Rat
+		bigInt := new(big.Int).SetUint64(uint64(v))
+		temp.SetInt(bigInt)
+		out.bigrat.Mul(&out.bigrat, &temp)
+	case uint8:
+		var temp big.Rat
+		bigInt := new(big.Int).SetUint64(uint64(v))
+		temp.SetInt(bigInt)
+		out.bigrat.Mul(&out.bigrat, &temp)
+	case uint16:
+		var temp big.Rat
+		bigInt := new(big.Int).SetUint64(uint64(v))
+		temp.SetInt(bigInt)
+		out.bigrat.Mul(&out.bigrat, &temp)
+	case uint32:
+		var temp big.Rat
+		bigInt := new(big.Int).SetUint64(uint64(v))
+		temp.SetInt(bigInt)
+		out.bigrat.Mul(&out.bigrat, &temp)
+	case uint64:
+		var temp big.Rat
+		bigInt := new(big.Int).SetUint64(v)
+		temp.SetInt(bigInt)
+		out.bigrat.Mul(&out.bigrat, &temp)
 	case float32:
 		var temp big.Rat
 		temp.SetFloat64(float64(v))
@@ -330,6 +415,31 @@ func (r *Rational) Quo(in any) *Rational {
 	case int64:
 		var temp big.Rat
 		temp.SetInt64(v)
+		out.bigrat.Quo(&out.bigrat, &temp)
+	case uint:
+		var temp big.Rat
+		bigInt := new(big.Int).SetUint64(uint64(v))
+		temp.SetInt(bigInt)
+		out.bigrat.Quo(&out.bigrat, &temp)
+	case uint8:
+		var temp big.Rat
+		bigInt := new(big.Int).SetUint64(uint64(v))
+		temp.SetInt(bigInt)
+		out.bigrat.Quo(&out.bigrat, &temp)
+	case uint16:
+		var temp big.Rat
+		bigInt := new(big.Int).SetUint64(uint64(v))
+		temp.SetInt(bigInt)
+		out.bigrat.Quo(&out.bigrat, &temp)
+	case uint32:
+		var temp big.Rat
+		bigInt := new(big.Int).SetUint64(uint64(v))
+		temp.SetInt(bigInt)
+		out.bigrat.Quo(&out.bigrat, &temp)
+	case uint64:
+		var temp big.Rat
+		bigInt := new(big.Int).SetUint64(v)
+		temp.SetInt(bigInt)
 		out.bigrat.Quo(&out.bigrat, &temp)
 	case float32:
 		var temp big.Rat
@@ -511,6 +621,15 @@ func parseInt64(a int64) *Rational {
 	return out
 }
 
+func parseUint64(a uint64) *Rational {
+	out := new(Rational)
+	// Convert uint64 to big.Int first, then to big.Rat
+	bigInt := new(big.Int).SetUint64(a)
+	out.bigrat.SetInt(bigInt)
+	out.precision = DefaultPrecision
+	return out
+}
+
 func parse(v string) (out *Rational) {
 	defer func() {
 		if out == nil {
@@ -567,6 +686,21 @@ func (r *Rational) Scan(src any) error {
 		r.Set(Rat(v))
 		return nil
 	case float64:
+		r.Set(Rat(v))
+		return nil
+	case uint:
+		r.Set(Rat(v))
+		return nil
+	case uint8:
+		r.Set(Rat(v))
+		return nil
+	case uint16:
+		r.Set(Rat(v))
+		return nil
+	case uint32:
+		r.Set(Rat(v))
+		return nil
+	case uint64:
 		r.Set(Rat(v))
 		return nil
 	default:

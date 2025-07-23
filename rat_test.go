@@ -439,6 +439,13 @@ func TestRatConstructor(t *testing.T) {
 		
 		// Rational type
 		{"rational", Rat("10.5"), "10.5"},
+		
+		// Unsigned integer types
+		{"uint", uint(10), "10"},
+		{"uint8", uint8(255), "255"},
+		{"uint16", uint16(65535), "65535"},
+		{"uint32", uint32(4294967295), "4294967295"},
+		{"uint64", uint64(18446744073709551615), "18446744073709551615"},
 	}
 	
 	for _, tt := range tests {
@@ -476,6 +483,11 @@ func TestArithmeticOperations(t *testing.T) {
 			{"fractions", "1/4", []any{"1/4"}, "0.5"},
 			{"mixed types", "0.1", []any{"1/10", "0.1"}, "0.3"},
 			{"multiple args", "1", []any{2, 3, 4}, "10"},
+			{"with uint", "10", []any{uint(5)}, "15"},
+			{"with uint8", "10", []any{uint8(5)}, "15"},
+			{"with uint16", "10", []any{uint16(5)}, "15"},
+			{"with uint32", "10", []any{uint32(5)}, "15"},
+			{"with uint64", "10", []any{uint64(5)}, "15"},
 		}
 		
 		for _, tt := range tests {
@@ -499,6 +511,8 @@ func TestArithmeticOperations(t *testing.T) {
 			{"decimals", "0.3", []any{"0.1"}, "0.2"},
 			{"fractions", "3/4", []any{"1/4"}, "0.5"},
 			{"negative result", "5", []any{10}, "-5"},
+			{"with uint", "20", []any{uint(5)}, "15"},
+			{"with uint64", "100", []any{uint64(25)}, "75"},
 		}
 		
 		for _, tt := range tests {
@@ -523,6 +537,9 @@ func TestArithmeticOperations(t *testing.T) {
 			{"fractions", "1/2", "1/2", "0.25"},
 			{"by zero", "10", 0, "0"},
 			{"negative", "-5", 3, "-15"},
+			{"with uint", "10", uint(5), "50"},
+			{"with uint8", "10", uint8(5), "50"},
+			{"with uint64", "10", uint64(5), "50"},
 		}
 		
 		for _, tt := range tests {
@@ -546,6 +563,8 @@ func TestArithmeticOperations(t *testing.T) {
 			{"decimals", "0.1", "0.1", "1"},
 			{"fractions", "1/2", "1/4", "2"},
 			{"non-exact", "10", 3, "3.33333333"},
+			{"with uint", "100", uint(5), "20"},
+			{"with uint32", "100", uint32(4), "25"},
 		}
 		
 		for _, tt := range tests {
@@ -854,5 +873,33 @@ func TestREADMEExample(t *testing.T) {
 	result := Rat("0.1").Add("1/10", "0.1").Equal(Rat("0.3"))
 	if !result {
 		t.Error("README example failed")
+	}
+}
+
+// Test Scan method with uint types
+func TestScanWithUintTypes(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    any
+		expected string
+	}{
+		{"uint", uint(42), "42"},
+		{"uint8", uint8(255), "255"},
+		{"uint16", uint16(65535), "65535"},
+		{"uint32", uint32(4294967295), "4294967295"},
+		{"uint64", uint64(18446744073709551615), "18446744073709551615"},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &Rational{}
+			err := r.Scan(tt.input)
+			if err != nil {
+				t.Fatalf("Scan(%v) error = %v", tt.input, err)
+			}
+			if r.String() != tt.expected {
+				t.Errorf("Scan(%v) = %s, want %s", tt.input, r.String(), tt.expected)
+			}
+		})
 	}
 }
