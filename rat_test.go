@@ -683,6 +683,60 @@ func TestComparisonOperations(t *testing.T) {
 		}
 	})
 	
+	t.Run("GreaterOrEqual", func(t *testing.T) {
+		tests := []struct {
+			name     string
+			a        any
+			b        any
+			expected bool
+		}{
+			{"greater", "11", 10, true},
+			{"equal integers", "10", 10, true},
+			{"equal decimals", "0.1", "0.1", true},
+			{"equal fractions", "1/2", "0.5", true},
+			{"less", "9", 10, false},
+			{"negative numbers greater", "-1", -2, true},
+			{"negative numbers equal", "-5", -5, true},
+			{"negative numbers less", "-10", -5, false},
+		}
+		
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				result := Rat(tt.a).GreaterOrEqual(tt.b)
+				if result != tt.expected {
+					t.Errorf("Rat(%v).GreaterOrEqual(%v) = %v, want %v", tt.a, tt.b, result, tt.expected)
+				}
+			})
+		}
+	})
+	
+	t.Run("LessOrEqual", func(t *testing.T) {
+		tests := []struct {
+			name     string
+			a        any
+			b        any
+			expected bool
+		}{
+			{"less", "9", 10, true},
+			{"equal integers", "10", 10, true},
+			{"equal decimals", "0.1", 0.1, true},
+			{"equal fractions", "0.5", "1/2", true},
+			{"greater", "11", 10, false},
+			{"negative numbers less", "-10", -5, true},
+			{"negative numbers equal", "-5", -5, true},
+			{"negative numbers greater", "-1", -2, false},
+		}
+		
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				result := Rat(tt.a).LessOrEqual(tt.b)
+				if result != tt.expected {
+					t.Errorf("Rat(%v).LessOrEqual(%v) = %v, want %v", tt.a, tt.b, result, tt.expected)
+				}
+			})
+		}
+	})
+	
 	t.Run("Cmp", func(t *testing.T) {
 		tests := []struct {
 			name     string

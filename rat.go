@@ -439,6 +439,24 @@ func (r *Rational) Equal(in any) bool {
 	return r.bigrat.Cmp(&inrat.bigrat) == 0
 }
 
+func (r *Rational) GreaterOrEqual(in any) bool {
+	inrat := Rat(in)
+	if inrat == nil {
+		return false
+	}
+	cmp := r.bigrat.Cmp(&inrat.bigrat)
+	return cmp >= 0
+}
+
+func (r *Rational) LessOrEqual(in any) bool {
+	inrat := Rat(in)
+	if inrat == nil {
+		return false
+	}
+	cmp := r.bigrat.Cmp(&inrat.bigrat)
+	return cmp <= 0
+}
+
 func (r *Rational) SetPrecision(v int) *Rational {
 	r.precision = v
 	return r
