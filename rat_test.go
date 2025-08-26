@@ -868,6 +868,45 @@ func TestOtherMethods(t *testing.T) {
 	})
 }
 
+// Test Value method for database driver
+func TestValue(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    any
+		expected string
+	}{
+		{"integer", 10, "10"},
+		{"decimal", "10.5", "10.5"},
+		{"fraction", "1/2", "0.5"},
+		{"percentage", "50%", "0.5"},
+		{"negative", "-10.5", "-10.5"},
+		{"zero", 0, "0"},
+		{"float", 0.1, "0.10000000"},
+		{"precise decimal", "123.456789", "123.456789"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := Rat(tt.input)
+			val, err := r.Value()
+			if err != nil {
+				t.Fatalf("Value() returned error: %v", err)
+			}
+			
+			// Value() should return a string
+			strVal, ok := val.(string)
+			if !ok {
+				t.Fatalf("Value() returned %T, expected string", val)
+			}
+			
+			// The string should be the decimal representation
+			if strVal != tt.expected {
+				t.Errorf("Value() = %q, want %q", strVal, tt.expected)
+			}
+		})
+	}
+}
+
 // Test example from README
 func TestREADMEExample(t *testing.T) {
 	result := Rat("0.1").Add("1/10", "0.1").Equal(Rat("0.3"))

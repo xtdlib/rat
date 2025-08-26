@@ -709,7 +709,7 @@ func (r *Rational) Scan(src any) error {
 }
 
 func (r *Rational) Value() (driver.Value, error) {
-	return r.bigrat.RatString(), nil
+	return r.String(), nil
 }
 
 func (r *Rational) GobEncode() ([]byte, error) {
