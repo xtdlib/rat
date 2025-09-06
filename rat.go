@@ -502,12 +502,20 @@ func (r *Rational) powIntPositive(exp int) *Rational {
 }
 
 func (r *Rational) String() string {
+	// If the denominator is 1, just return the numerator
+	if r.bigrat.Denom().Int64() == 1 {
+		return r.bigrat.Num().String()
+	}
+	
+	// Check if this can be represented exactly as a decimal
 	n, exact := r.bigrat.FloatPrec()
 	if exact {
+		// Can be represented exactly, use decimal form
 		return r.bigrat.FloatString(min(r.precision, n))
-		// return r.bigrat.FloatString(min(DefaultPrecision, n))
 	}
-	return r.bigrat.FloatString(r.precision)
+	
+	// Cannot be represented exactly as decimal, return fraction form
+	return r.bigrat.RatString()
 }
 
 func (r *Rational) Set(v *Rational) *Rational {

@@ -48,6 +48,7 @@ func TestJsonMarshalUnmarshal(t *testing.T) {
 		{"string decimal", "3.14159", "3.14159"},  
 		{"negative string", "-123.456", "-123.456"},  
 		{"fraction", "1/2", "0.5"},
+		{"fraction2", "1/3", "1/3"},
 		{"percentage", "25%", "0.25"},
 		{"zero", 0, "0"},
 		{"large number", "123456789.987654321", "123456789.98765432"},
@@ -458,7 +459,7 @@ func TestString(t *testing.T) {
 	{
 		a := parse("1/3")
 		a.precision = 8
-		if a.String() != "0.33333333" {
+		if a.String() != "1/3" {
 			t.Fatal(a.String())
 		}
 		if _, exact := a.bigrat.FloatPrec(); exact {
@@ -693,7 +694,7 @@ func TestArithmeticOperations(t *testing.T) {
 			{"integers", "10", 5, "2"},
 			{"decimals", "0.1", "0.1", "1"},
 			{"fractions", "1/2", "1/4", "2"},
-			{"non-exact", "10", 3, "3.33333333"},
+			{"non-exact", "10", 3, "10/3"},
 			{"with uint", "100", uint(5), "20"},
 			{"with uint32", "100", uint32(4), "25"},
 		}
@@ -992,7 +993,7 @@ func TestOtherMethods(t *testing.T) {
 	t.Run("SetPrecision", func(t *testing.T) {
 		r := Rat("10").Quo("3")
 		r.SetPrecision(3)
-		expected := "3.333"
+		expected := "10/3"  // Fractions remain as fractions regardless of precision
 		if r.String() != expected {
 			t.Errorf("SetPrecision(3) = %s, want %s", r.String(), expected)
 		}
