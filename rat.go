@@ -77,6 +77,10 @@ func Rat(v any) *Rational {
 	return nil
 }
 
+func (r *Rational) MarshalJSON() ([]byte, error) {
+	return []byte("\"" + r.String() + "\""), nil
+}
+
 func (r *Rational) UnmarshalJSON(data []byte) error {
 	sdata := string(data)
 	sdata = strings.ReplaceAll(sdata, "\"", "")

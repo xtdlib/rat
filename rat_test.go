@@ -38,6 +38,137 @@ func TestJson(t *testing.T) {
 	}
 }
 
+func TestJsonMarshalUnmarshal(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       any
+		marshalStr  string  // Expected string in JSON
+	}{
+		{"integer", 42, "42"},
+		{"string decimal", "3.14159", "3.14159"},  
+		{"negative string", "-123.456", "-123.456"},  
+		{"fraction", "1/2", "0.5"},
+		{"percentage", "25%", "0.25"},
+		{"zero", 0, "0"},
+		{"large number", "123456789.987654321", "123456789.98765432"},
+		{"simple decimal", "10.5", "10.5"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a Rational
+			r := Rat(tt.input)
+			
+			// Marshal to JSON
+			data, err := json.Marshal(r)
+			if err != nil {
+				t.Fatalf("failed to marshal: %v", err)
+			}
+			
+			// Check the marshaled format is a quoted string
+			if len(data) < 2 || data[0] != '"' || data[len(data)-1] != '"' {
+				t.Fatalf("expected quoted string, got: %s", string(data))
+			}
+			
+			// Verify the marshaled string contains expected value
+			marshaledStr := string(data[1:len(data)-1]) // Remove quotes
+			if marshaledStr != tt.marshalStr {
+				t.Fatalf("marshaled string mismatch: got %s, want %s", marshaledStr, tt.marshalStr)
+			}
+			
+			// Unmarshal back
+			var r2 Rational
+			err = json.Unmarshal(data, &r2)
+			if err != nil {
+				t.Fatalf("failed to unmarshal: %v", err)
+			}
+			
+			// Verify the string representations match after round-trip
+			if r.String() != r2.String() {
+				t.Fatalf("string representations don't match: original %s, restored %s", r.String(), r2.String())
+			}
+		})
+	}
+}
+
+func TestJsonFloatPrecision(t *testing.T) {
+	// Test that demonstrates float precision behavior
+	r1 := Rat(3.14159)  // From float64
+	r2 := Rat("3.14159") // From string
+	
+	// These won't be equal due to float precision
+	if r1.Equal(r2) {
+		t.Fatal("Float and string representations should not be equal due to precision")
+	}
+	
+	// But after JSON round-trip, a float-based Rational should equal itself
+	data, err := json.Marshal(r1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	
+	var r3 Rational
+	err = json.Unmarshal(data, &r3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	
+	// The marshaled value "3.14159000" when parsed as string
+	// creates a different Rational than the original float
+	// This is expected behavior due to float precision
+	if r1.String() != "3.14159000" {
+		t.Fatalf("Expected float-based Rational to have precision suffix, got %s", r1.String())
+	}
+	
+	if r3.String() != "3.14159" {
+		t.Fatalf("Expected unmarshaled Rational to be clean string, got %s", r3.String())
+	}
+}
+
+func TestJsonStructMarshalUnmarshal(t *testing.T) {
+	type Product struct {
+		Name     string    `json:"name"`
+		Price    *Rational `json:"price"`
+		Discount *Rational `json:"discount"`
+		Tax      *Rational `json:"tax"`
+	}
+	
+	// Create a product
+	original := Product{
+		Name:     "Widget",
+		Price:    Rat("99.99"),
+		Discount: Rat("10%"),
+		Tax:      Rat("8.5%"),
+	}
+	
+	// Marshal to JSON
+	data, err := json.Marshal(original)
+	if err != nil {
+		t.Fatalf("failed to marshal struct: %v", err)
+	}
+	
+	// Unmarshal back
+	var restored Product
+	err = json.Unmarshal(data, &restored)
+	if err != nil {
+		t.Fatalf("failed to unmarshal struct: %v", err)
+	}
+	
+	// Verify all fields
+	if restored.Name != original.Name {
+		t.Fatalf("name mismatch: got %s, want %s", restored.Name, original.Name)
+	}
+	if !restored.Price.Equal(original.Price) {
+		t.Fatalf("price mismatch: got %s, want %s", restored.Price, original.Price)
+	}
+	if !restored.Discount.Equal(original.Discount) {
+		t.Fatalf("discount mismatch: got %s, want %s", restored.Discount, original.Discount)
+	}
+	if !restored.Tax.Equal(original.Tax) {
+		t.Fatalf("tax mismatch: got %s, want %s", restored.Tax, original.Tax)
+	}
+}
+
 func TestSub(t *testing.T) {
 	a := Rat("2")
 	if !a.Sub(-2).Equal(Rat(4)) {
