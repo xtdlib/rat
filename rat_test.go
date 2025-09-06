@@ -45,14 +45,14 @@ func TestJsonMarshalUnmarshal(t *testing.T) {
 		marshalStr  string  // Expected string in JSON
 	}{
 		{"integer", 42, "42"},
-		{"string decimal", "3.14159", "3.14159"},  
-		{"negative string", "-123.456", "-123.456"},  
-		{"fraction", "1/2", "0.5"},
+		{"string decimal", "3.14159", "314159/100000"},  
+		{"negative string", "-123.456", "-15432/125"},  
+		{"fraction", "1/2", "1/2"},
 		{"fraction2", "1/3", "1/3"},
-		{"percentage", "25%", "0.25"},
+		{"percentage", "25%", "1/4"},
 		{"zero", 0, "0"},
-		{"large number", "123456789.987654321", "123456789.98765432"},
-		{"simple decimal", "10.5", "10.5"},
+		{"large number", "123456789.987654321", "123456789987654321/1000000000"},
+		{"simple decimal", "10.5", "21/2"},
 	}
 
 	for _, tt := range tests {
@@ -92,6 +92,7 @@ func TestJsonMarshalUnmarshal(t *testing.T) {
 	}
 }
 
+
 func TestJsonFloatPrecision(t *testing.T) {
 	// Test that demonstrates float precision behavior
 	r1 := Rat(3.14159)  // From float64
@@ -114,15 +115,20 @@ func TestJsonFloatPrecision(t *testing.T) {
 		t.Fatal(err)
 	}
 	
-	// The marshaled value "3.14159000" when parsed as string
-	// creates a different Rational than the original float
-	// This is expected behavior due to float precision
+	// The marshaled value is a fraction that when parsed back
+	// creates the same Rational as the original
+	// This is expected behavior - JSON preserves exact value
 	if r1.String() != "3.14159000" {
 		t.Fatalf("Expected float-based Rational to have precision suffix, got %s", r1.String())
 	}
 	
-	if r3.String() != "3.14159" {
-		t.Fatalf("Expected unmarshaled Rational to be clean string, got %s", r3.String())
+	if r3.String() != "3.14159000" {
+		t.Fatalf("Expected unmarshaled Rational to match original, got %s", r3.String())
+	}
+	
+	// They should be equal after round-trip
+	if !r1.Equal(&r3) {
+		t.Fatal("JSON round-trip should preserve exact value")
 	}
 }
 
@@ -459,12 +465,40 @@ func TestString(t *testing.T) {
 	{
 		a := parse("1/3")
 		a.precision = 8
-		if a.String() != "1/3" {
+		if a.String() != "0.33333333" {
 			t.Fatal(a.String())
 		}
 		if _, exact := a.bigrat.FloatPrec(); exact {
 			t.Fatal("should not be exact")
 		}
+	}
+}
+
+func TestFractionString(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{"integer", "42", "42"},
+		{"zero", "0", "0"},
+		{"fraction 1/2", "1/2", "1/2"},
+		{"fraction 1/3", "1/3", "1/3"},
+		{"decimal 0.5", "0.5", "1/2"},
+		{"decimal 0.25", "0.25", "1/4"},
+		{"decimal 3.14", "3.14", "157/50"},
+		{"negative", "-1/3", "-1/3"},
+		{"complex fraction", "10/3", "10/3"},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := parse(tt.input)
+			result := r.FractionString()
+			if result != tt.expected {
+				t.Errorf("FractionString() = %s, want %s", result, tt.expected)
+			}
+		})
 	}
 }
 
@@ -494,11 +528,12 @@ func TestDecimalString(t *testing.T) {
 				t.Errorf("DecimalString() = %s, want %s", result, tt.expected)
 			}
 			
-			// Verify String() still returns fraction form for inexact decimals
-			if tt.input == "1/3" || tt.input == "10/3" || tt.input == "-1/3" {
-				strResult := r.String()
-				if strResult != tt.input {
-					t.Errorf("String() should return fraction form: got %s, want %s", strResult, tt.input)
+			// Verify FractionString() returns fraction form for fraction inputs
+			// Skip comparison for decimal inputs as they get converted to fractions
+			if tt.input == "1/3" || tt.input == "10/3" || tt.input == "-1/3" || tt.input == "1/2" || tt.input == "5" {
+				fractionResult := r.FractionString()
+				if fractionResult != tt.input {
+					t.Errorf("FractionString() should return original form for fractions: got %s, want %s", fractionResult, tt.input)
 				}
 			}
 		})
@@ -731,7 +766,7 @@ func TestArithmeticOperations(t *testing.T) {
 			{"integers", "10", 5, "2"},
 			{"decimals", "0.1", "0.1", "1"},
 			{"fractions", "1/2", "1/4", "2"},
-			{"non-exact", "10", 3, "10/3"},
+			{"non-exact", "10", 3, "3.33333333"},
 			{"with uint", "100", uint(5), "20"},
 			{"with uint32", "100", uint32(4), "25"},
 		}
@@ -1030,7 +1065,7 @@ func TestOtherMethods(t *testing.T) {
 	t.Run("SetPrecision", func(t *testing.T) {
 		r := Rat("10").Quo("3")
 		r.SetPrecision(3)
-		expected := "10/3"  // Fractions remain as fractions regardless of precision
+		expected := "3.333"
 		if r.String() != expected {
 			t.Errorf("SetPrecision(3) = %s, want %s", r.String(), expected)
 		}
