@@ -99,28 +99,28 @@ func (r *Rational) FloorInt() int {
 	//   floor(3.0) = 3      (already integer)
 	//   floor(-3.7) = -4    (rounds down, NOT -3!)
 	//   floor(-3.0) = -3    (already integer)
-	
+
 	// IMPORTANT: We cannot use float64 conversion because it loses precision!
 	// Example: -3.000000000000000000001 would become -3.0 in float64,
 	// giving us floor(-3.0) = -3, but the correct answer is -4!
-	
+
 	// Step 1: Get the numerator and denominator of our rational number
 	// If we have -3.1, it's stored as -31/10
-	num := r.bigrat.Num()      // numerator (-31)
-	denom := r.bigrat.Denom()   // denominator (10)
-	
+	num := r.bigrat.Num()     // numerator (-31)
+	denom := r.bigrat.Denom() // denominator (10)
+
 	// Step 2: Do integer division (this truncates towards zero)
 	// -31 ÷ 10 = -3 (remainder -1, but Go's Div ignores remainder)
 	// This is NOT floor yet! It's truncation.
 	quotient := new(big.Int)
 	quotient.Div(num, denom)
-	
+
 	// Step 3: Check if there was a remainder
 	// We do this by calculating: quotient × denominator
 	// If this equals numerator, there was no remainder
 	temp := new(big.Int)
-	temp.Mul(quotient, denom)  // -3 × 10 = -30
-	
+	temp.Mul(quotient, denom) // -3 × 10 = -30
+
 	// Step 4: Compare original with our multiplication result
 	// If num < temp, we have a negative number with a remainder
 	// Example: -31 < -30, so -3.1 had a remainder
@@ -132,11 +132,11 @@ func (r *Rational) FloorInt() int {
 	}
 	// Note: For positive numbers, truncation = floor, so no adjustment needed
 	// For exact integers (no remainder), no adjustment needed
-	
+
 	// Step 5: Convert our big.Int result to regular int
 	// WARNING: This can overflow in several ways:
 	// 1. If quotient > MaxInt64, Int64() returns MaxInt64 (incorrect)
-	// 2. If quotient < MinInt64, Int64() returns MinInt64 (incorrect)  
+	// 2. If quotient < MinInt64, Int64() returns MinInt64 (incorrect)
 	// 3. On 32-bit systems, int(int64) can overflow if value > MaxInt32
 	//
 	// For most practical uses, the result should fit in an int.
@@ -506,14 +506,14 @@ func (r *Rational) String() string {
 	if r.bigrat.Denom().Int64() == 1 {
 		return r.bigrat.Num().String()
 	}
-	
+
 	// Check if this can be represented exactly as a decimal
 	n, exact := r.bigrat.FloatPrec()
 	if exact {
 		// Can be represented exactly, use decimal form
 		return r.bigrat.FloatString(min(r.precision, n))
 	}
-	
+
 	// Cannot be represented exactly as decimal, return fraction form
 	return r.bigrat.RatString()
 }
@@ -740,4 +740,15 @@ func (r *Rational) GobEncode() ([]byte, error) {
 func (r *Rational) GobDecode(buf []byte) error {
 	r.precision = DefaultPrecision
 	return r.bigrat.GobDecode(buf)
+}
+
+func Or(vals ...any) *Rational {
+	var zero = Rat(0)
+	for _, val := range vals {
+		ratval := Rat(val)
+		if !ratval.Equal(zero) {
+			return ratval
+		}
+	}
+	return zero
 }
