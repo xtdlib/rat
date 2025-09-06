@@ -468,6 +468,43 @@ func TestString(t *testing.T) {
 	}
 }
 
+func TestDecimalString(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     string
+		precision int
+		expected  string
+	}{
+		{"exact fraction 1/2", "1/2", 8, "0.5"},
+		{"inexact fraction 1/3", "1/3", 8, "0.33333333"},
+		{"inexact fraction 1/3 precision 3", "1/3", 3, "0.333"},
+		{"integer", "5", 8, "5"},
+		{"decimal", "3.14", 8, "3.14"},
+		{"10/3 default precision", "10/3", 8, "3.33333333"},
+		{"10/3 precision 2", "10/3", 2, "3.33"},
+		{"negative fraction", "-1/3", 4, "-0.3333"},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := parse(tt.input)
+			r.precision = tt.precision
+			result := r.DecimalString()
+			if result != tt.expected {
+				t.Errorf("DecimalString() = %s, want %s", result, tt.expected)
+			}
+			
+			// Verify String() still returns fraction form for inexact decimals
+			if tt.input == "1/3" || tt.input == "10/3" || tt.input == "-1/3" {
+				strResult := r.String()
+				if strResult != tt.input {
+					t.Errorf("String() should return fraction form: got %s, want %s", strResult, tt.input)
+				}
+			}
+		})
+	}
+}
+
 // func TestCopy(t *testing.T) {
 // 	a := parse("1/2")
 // 	b := a.Clone()

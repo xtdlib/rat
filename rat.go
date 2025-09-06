@@ -518,6 +518,15 @@ func (r *Rational) String() string {
 	return r.bigrat.RatString()
 }
 
+func (r *Rational) DecimalString() string {
+	// Always return decimal representation with the set precision
+	n, exact := r.bigrat.FloatPrec()
+	if exact {
+		return r.bigrat.FloatString(min(r.precision, n))
+	}
+	return r.bigrat.FloatString(r.precision)
+}
+
 func (r *Rational) Set(v *Rational) *Rational {
 	r.bigrat.Set(&v.bigrat)
 	return r
