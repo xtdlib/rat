@@ -506,7 +506,7 @@ func (r *Rational) String() string {
 	if exact {
 		return r.bigrat.FloatString(min(r.precision, n))
 	}
-	return r.bigrat.FloatString(r.precision)
+	return r.bigrat.String()
 }
 
 func (r *Rational) DecimalString() string {
