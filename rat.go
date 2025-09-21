@@ -78,7 +78,7 @@ func Rat(v any) *Rational {
 }
 
 func (r *Rational) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + r.FractionString() + "\""), nil
+	return []byte("\"" + r.String() + "\""), nil
 }
 
 func (r *Rational) UnmarshalJSON(data []byte) error {
