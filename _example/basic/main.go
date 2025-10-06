@@ -17,5 +17,8 @@ func main() {
 	// log.Println(rat.Rat("-5.1").Ceil())
 	// log.Println(rat.Rat("3%").Mul(10))
 
-	log.Println(rat.Rat("1").Quo(10))
+	// log.Println(rat.Rat("1").Quo(10))
+	log.Println(rat.Rat("1").Quo(3).DecimalString())
+	// log.Println(rat.Rat("3-1").DecimalString())
+	log.Println(rat.Rat("3+1").DecimalString())
 }

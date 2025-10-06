@@ -72,6 +72,9 @@ func Rat(v any) *Rational {
 	case string:
 		return parse(v)
 	case *Rational:
+		if v == nil {
+			return Rat(0)
+		}
 		return v
 	}
 	return nil
@@ -658,6 +661,19 @@ func parse(v string) (out *Rational) {
 		}
 	}()
 
+	if v == "" {
+		return Rat(0)
+	}
+
+	if strings.Contains(v, "+") {
+		split := strings.Split(v, "+")
+		if len(split) != 2 {
+			slog.Error("rat: invalid rat string " + v)
+			return nil
+		}
+		return Rat(split[0]).Add(Rat(split[1]))
+	}
+
 	if strings.HasSuffix(v, "%") {
 		defer func() {
 			if out == nil {
@@ -752,3 +768,12 @@ func Or(vals ...any) *Rational {
 	}
 	return zero
 }
+
+func Premium(quote any, base any) *Rational {
+	baserat := Rat(base)
+	quoterat := Rat(quote)
+	return quoterat.Sub(baserat).Quo(baserat).Mul(100)
+}
+
+// type Price *Rational
+// type Volume *Rational
