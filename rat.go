@@ -708,10 +708,18 @@ func (r *Rational) Scan(src any) error {
 	r.precision = DefaultPrecision
 	switch v := src.(type) {
 	case string:
-		r.Set(Rat(v))
+		parsed := Rat(v)
+		if parsed == nil {
+			return fmt.Errorf("rat: failed to parse string %q", v)
+		}
+		r.Set(parsed)
 		return nil
 	case []byte:
-		r.Set(Rat(string(v)))
+		parsed := Rat(string(v))
+		if parsed == nil {
+			return fmt.Errorf("rat: failed to parse bytes %q", v)
+		}
+		r.Set(parsed)
 		return nil
 	case int32:
 		r.Set(Rat(v))
