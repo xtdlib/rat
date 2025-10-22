@@ -543,6 +543,10 @@ func (r *Rational) Clone() *Rational {
 }
 
 func (r *Rational) Less(in any) bool {
+	// Treat nil receiver as zero
+	if r == nil {
+		r = Rat(0)
+	}
 	inrat := Rat(in)
 
 	if r.bigrat.Cmp(&inrat.bigrat) == -1 {
@@ -552,6 +556,10 @@ func (r *Rational) Less(in any) bool {
 }
 
 func (r *Rational) Greater(in any) bool {
+	// Treat nil receiver as zero
+	if r == nil {
+		r = Rat(0)
+	}
 	inrat := Rat(in)
 
 	if r.bigrat.Cmp(&inrat.bigrat) == 1 {
@@ -561,11 +569,19 @@ func (r *Rational) Greater(in any) bool {
 }
 
 func (r *Rational) Cmp(b any) int {
+	// Treat nil receiver as zero
+	if r == nil {
+		r = Rat(0)
+	}
 	br := Rat(b)
 	return r.bigrat.Cmp(&br.bigrat)
 }
 
 func (r *Rational) Equal(in any) bool {
+	// Treat nil receiver as zero
+	if r == nil {
+		r = Rat(0)
+	}
 	inrat := Rat(in)
 	if inrat == nil {
 		return false
@@ -574,6 +590,10 @@ func (r *Rational) Equal(in any) bool {
 }
 
 func (r *Rational) GreaterOrEqual(in any) bool {
+	// Treat nil receiver as zero
+	if r == nil {
+		r = Rat(0)
+	}
 	inrat := Rat(in)
 	if inrat == nil {
 		return false
@@ -583,6 +603,10 @@ func (r *Rational) GreaterOrEqual(in any) bool {
 }
 
 func (r *Rational) LessOrEqual(in any) bool {
+	// Treat nil receiver as zero
+	if r == nil {
+		r = Rat(0)
+	}
 	inrat := Rat(in)
 	if inrat == nil {
 		return false

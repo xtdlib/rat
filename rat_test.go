@@ -1146,3 +1146,76 @@ func TestScanWithUintTypes(t *testing.T) {
 		})
 	}
 }
+
+func TestNilReceiverAsZero(t *testing.T) {
+	var nilRat *Rational = nil
+
+	t.Run("Equal", func(t *testing.T) {
+		if !nilRat.Equal(0) {
+			t.Errorf("nil.Equal(0) = false, want true")
+		}
+		if nilRat.Equal(5) {
+			t.Errorf("nil.Equal(5) = true, want false")
+		}
+	})
+
+	t.Run("Less", func(t *testing.T) {
+		if !nilRat.Less(1) {
+			t.Errorf("nil.Less(1) = false, want true")
+		}
+		if nilRat.Less(-1) {
+			t.Errorf("nil.Less(-1) = true, want false")
+		}
+		if nilRat.Less(0) {
+			t.Errorf("nil.Less(0) = true, want false")
+		}
+	})
+
+	t.Run("Greater", func(t *testing.T) {
+		if nilRat.Greater(1) {
+			t.Errorf("nil.Greater(1) = true, want false")
+		}
+		if !nilRat.Greater(-1) {
+			t.Errorf("nil.Greater(-1) = false, want true")
+		}
+		if nilRat.Greater(0) {
+			t.Errorf("nil.Greater(0) = true, want false")
+		}
+	})
+
+	t.Run("GreaterOrEqual", func(t *testing.T) {
+		if !nilRat.GreaterOrEqual(0) {
+			t.Errorf("nil.GreaterOrEqual(0) = false, want true")
+		}
+		if nilRat.GreaterOrEqual(1) {
+			t.Errorf("nil.GreaterOrEqual(1) = true, want false")
+		}
+		if !nilRat.GreaterOrEqual(-1) {
+			t.Errorf("nil.GreaterOrEqual(-1) = false, want true")
+		}
+	})
+
+	t.Run("LessOrEqual", func(t *testing.T) {
+		if !nilRat.LessOrEqual(0) {
+			t.Errorf("nil.LessOrEqual(0) = false, want true")
+		}
+		if nilRat.LessOrEqual(-1) {
+			t.Errorf("nil.LessOrEqual(-1) = true, want false")
+		}
+		if !nilRat.LessOrEqual(1) {
+			t.Errorf("nil.LessOrEqual(1) = false, want true")
+		}
+	})
+
+	t.Run("Cmp", func(t *testing.T) {
+		if nilRat.Cmp(0) != 0 {
+			t.Errorf("nil.Cmp(0) = %d, want 0", nilRat.Cmp(0))
+		}
+		if nilRat.Cmp(5) != -1 {
+			t.Errorf("nil.Cmp(5) = %d, want -1", nilRat.Cmp(5))
+		}
+		if nilRat.Cmp(-5) != 1 {
+			t.Errorf("nil.Cmp(-5) = %d, want 1", nilRat.Cmp(-5))
+		}
+	})
+}
